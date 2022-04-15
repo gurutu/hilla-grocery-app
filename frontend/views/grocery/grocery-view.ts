@@ -2,13 +2,14 @@ import '@vaadin/button';
 import '@vaadin/text-field';
 import '@vaadin/number-field';
 import '@vaadin/grid/vaadin-grid';
-import { html } from 'lit';
+import { html,render } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { View } from 'Frontend/views/view';
 import { Binder, field } from '@hilla/form';
-import { getGroceries, save } from 'Frontend/generated/GroceryEndpoint';
+import { getGroceries, save,deleteId } from 'Frontend/generated/GroceryEndpoint';
 import GroceryItem from 'Frontend/generated/com/example/application/GroceryItem';
 import GroceryItemModel from 'Frontend/generated/com/example/application/GroceryItemModel';
+import {GridItemModel} from "@vaadin/grid";
 
 @customElement('grocery-view')
 export class GroceryView extends View {
@@ -17,6 +18,7 @@ export class GroceryView extends View {
   private groceries: GroceryItem[] = [];
   private binder = new Binder(this, GroceryItemModel);
 
+
   render() {
     return html`
       <div class="p-m">
@@ -24,6 +26,9 @@ export class GroceryView extends View {
           <vaadin-text-field
             ${field(this.binder.model.name)}
             label="Item"> </vaadin-text-field>
+          <vaadin-text-field
+              ${field(this.binder.model.subScription)}
+              label="Item"> </vaadin-text-field>
           <vaadin-number-field
             ${field(this.binder.model.quantity)}
             has-controls
@@ -38,7 +43,15 @@ export class GroceryView extends View {
         <vaadin-grid .items="${this.groceries}" theme="row-stripes" style="max-width: 400px">
 
           <vaadin-grid-column path="name"></vaadin-grid-column>
+          <vaadin-grid-column path="subScription"></vaadin-grid-column>
           <vaadin-grid-column path="quantity"></vaadin-grid-column>
+          <vaadin-grid-column
+              frozen-to-end
+              .renderer="${this.actionRenderer}"
+              auto-width
+              flex-grow="0"
+          ></vaadin-grid-column>
+        </vaadin-grid>
         </vaadin-grid>
       </div>`;
   }
@@ -51,8 +64,17 @@ export class GroceryView extends View {
     }
   }
 
+  async deleteItem(data:GroceryItem) {
+    await deleteId(data);
+    await this.firstUpdated();
+  }
+
   async firstUpdated() {
     const groceries = await getGroceries();
     this.groceries = groceries;
   }
+  private actionRenderer = (root: HTMLElement, _: HTMLElement, model: GridItemModel<GroceryItem>) => {
+    const person = model.item;
+    render(html`<vaadin-button theme="tertiary-inline" @click=${() => this.deleteItem(person)}>DELETE</vaadin-button>`, root);
+  };
 }

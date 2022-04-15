@@ -13,6 +13,8 @@ public class GroceryItem {
     @Min(value = 1)
     private Integer quantity;
 
+    private String subScription;
+
     public String getName() {
         return name;
     }
@@ -27,5 +29,13 @@ public class GroceryItem {
 
     public void setQuantity(int quantity) {
         this.quantity = quantity;
+    }
+
+    public String getSubScription() {
+        return subScription;
+    }
+
+    public void setSubScription(String subScription) {
+        this.subScription = subScription;
     }
 }
